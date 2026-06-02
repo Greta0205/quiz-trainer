@@ -1,0 +1,1391 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuizChampion Trainer – Werder Bremen</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #060f08;
+  --bg2: #0d1f10;
+  --bg3: #142918;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(255,255,255,0.18);
+  --gold: #1db954;
+  --gold2: #17a348;
+  --text: #edf5ee;
+  --muted: rgba(237,245,238,0.5);
+  --green: #3ecf6e;
+  --red: #ff5c5c;
+  --blue: #a8f0b8;
+  --radius: 14px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+h1,h2,h3,h4 { font-family: 'Syne', sans-serif; }
+
+/* BG pattern */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle at 20% 20%, rgba(29,185,84,0.08) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(29,185,84,0.04) 0%, transparent 50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 20px 60px; }
+
+/* ── SCREENS ── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── HEADER ── */
+.site-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 28px 0 20px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 36px;
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon {
+  width: 38px; height: 38px; background: var(--gold);
+  border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.logo-text { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: -0.5px; }
+.logo-text span { color: var(--gold); }
+.header-badge {
+  font-size: 11px; background: rgba(29,185,84,0.12); border: 1px solid rgba(29,185,84,0.3);
+  color: var(--gold); padding: 4px 12px; border-radius: 99px; letter-spacing: 0.5px;
+}
+
+/* ── HOME ── */
+.hero { text-align: center; padding: 20px 0 40px; }
+.hero-title { font-size: clamp(36px,6vw,64px); font-weight: 800; line-height: 1.05; letter-spacing: -2px; margin-bottom: 16px; }
+.hero-title .accent { color: var(--gold); }
+.hero-sub { color: var(--muted); font-size: 16px; max-width: 480px; margin: 0 auto 40px; line-height: 1.6; }
+
+.stats-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 40px; }
+.stat-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; text-align: center;
+}
+.stat-num { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; color: var(--gold); }
+.stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+.section-title { font-size: 13px; font-weight: 500; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 16px; }
+
+.modes-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; margin-bottom: 32px; }
+.mode-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 20px; cursor: pointer;
+  transition: border-color 0.2s, transform 0.15s;
+  position: relative; overflow: hidden;
+}
+.mode-card:hover { border-color: var(--border2); transform: translateY(-2px); }
+.mode-card.selected { border-color: var(--gold); }
+.mode-card.selected::before {
+  content: '✓'; position: absolute; top: 12px; right: 14px;
+  color: var(--gold); font-size: 14px; font-weight: bold;
+}
+.mode-icon { font-size: 28px; margin-bottom: 10px; }
+.mode-name { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.mode-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+.cats-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-bottom: 36px; }
+.cat-btn {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 8px; cursor: pointer; text-align: center;
+  font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--muted);
+  transition: all 0.15s; display: flex; flex-direction: column; align-items: center; gap: 6px;
+}
+.cat-btn:hover { border-color: var(--border2); color: var(--text); }
+.cat-btn.selected { border-color: var(--gold); color: var(--gold); background: rgba(245,200,66,0.07); }
+.cat-emoji { font-size: 18px; }
+
+/* weakness indicator */
+.weakness-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--red);
+  position: absolute; top: 8px; right: 8px;
+}
+
+.start-btn {
+  width: 100%; padding: 18px; background: var(--gold);
+  color: #060f08; border: none; border-radius: var(--radius);
+  font-family: 'Syne', sans-serif; font-size: 17px; font-weight: 800;
+  cursor: pointer; letter-spacing: -0.3px; transition: background 0.15s, transform 0.1s;
+}
+.start-btn:hover { background: var(--gold2); transform: translateY(-1px); }
+.start-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* ── QUIZ SCREEN ── */
+.quiz-top {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 24px;
+}
+.quiz-meta { display: flex; align-items: center; gap: 12px; }
+.quiz-cat-badge {
+  background: rgba(29,185,84,0.12); border: 1px solid rgba(29,185,84,0.3);
+  color: var(--gold); font-size: 12px; padding: 4px 12px; border-radius: 99px;
+}
+.quiz-progress-text { font-size: 13px; color: var(--muted); }
+
+.timer-ring { position: relative; width: 56px; height: 56px; }
+.timer-ring svg { transform: rotate(-90deg); }
+.timer-ring circle { fill: none; stroke: var(--border); stroke-width: 3; }
+.timer-ring .progress { stroke: var(--gold); stroke-width: 3; stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke 0.3s; }
+.timer-num {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700;
+}
+
+.progress-bar { height: 3px; background: var(--border); border-radius: 99px; margin-bottom: 32px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--gold); border-radius: 99px; transition: width 0.4s; }
+
+.question-box {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 18px; padding: 32px; margin-bottom: 20px;
+}
+.question-num { font-size: 12px; color: var(--muted); margin-bottom: 12px; letter-spacing: 1px; text-transform: uppercase; }
+.question-text { font-family: 'Syne', sans-serif; font-size: clamp(17px,3vw,22px); font-weight: 600; line-height: 1.4; }
+
+.options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+.option-btn {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px 18px; cursor: pointer;
+  text-align: left; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--text);
+  transition: all 0.15s; position: relative;
+}
+.option-btn:hover:not(:disabled) { border-color: var(--border2); background: var(--bg3); }
+.option-btn.correct { border-color: var(--green); background: rgba(62,207,110,0.1); color: var(--green); }
+.option-btn.wrong { border-color: var(--red); background: rgba(255,92,92,0.1); color: var(--red); }
+.option-btn:disabled { cursor: default; }
+.option-letter {
+  display: inline-block; width: 22px; height: 22px; border-radius: 6px;
+  background: var(--bg3); border: 1px solid var(--border);
+  font-size: 11px; font-weight: 700; text-align: center; line-height: 22px;
+  margin-right: 10px; font-family: 'Syne', sans-serif;
+}
+
+/* text input mode */
+.text-input-wrap { margin-bottom: 20px; }
+.text-input-wrap input {
+  width: 100%; background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: var(--radius); padding: 16px 20px; font-size: 16px;
+  font-family: 'DM Sans', sans-serif; color: var(--text); outline: none;
+  transition: border-color 0.15s;
+}
+.text-input-wrap input:focus { border-color: var(--gold); }
+.text-input-wrap input.correct { border-color: var(--green); }
+.text-input-wrap input.wrong { border-color: var(--red); }
+
+.submit-btn {
+  width: 100%; padding: 14px; background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: var(--radius); color: var(--text); font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.15s;
+}
+.submit-btn:hover { background: var(--gold); color: #060f08; border-color: var(--gold); }
+
+.feedback-box {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px 20px; margin-bottom: 16px;
+  display: none;
+}
+.feedback-box.show { display: block; }
+.feedback-correct { border-color: var(--green); color: var(--green); }
+.feedback-wrong { border-color: var(--red); }
+.feedback-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; margin-bottom: 4px; }
+.feedback-explanation { font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+.next-btn {
+  width: 100%; padding: 16px; background: var(--gold);
+  color: #060f08; border: none; border-radius: var(--radius);
+  font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 800;
+  cursor: pointer; display: none; transition: background 0.15s;
+}
+.next-btn.show { display: block; }
+.next-btn:hover { background: var(--gold2); }
+
+/* Buzzer mode */
+.buzzer-wrap { text-align: center; padding: 20px 0 30px; }
+.buzzer-btn {
+  width: 160px; height: 160px; border-radius: 50%; background: var(--gold);
+  border: none; cursor: pointer; font-family: 'Syne', sans-serif;
+  font-size: 16px; font-weight: 800; color: #060f08;
+  transition: transform 0.1s, box-shadow 0.1s;
+  box-shadow: 0 0 0 0 rgba(29,185,84,0.4);
+}
+.buzzer-btn:hover { transform: scale(1.04); }
+.buzzer-btn:active { transform: scale(0.96); }
+.buzzer-btn.buzzed { animation: pulse 0.4s ease; }
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(29,185,84,0.4)} 50%{box-shadow:0 0 0 30px rgba(29,185,84,0)} }
+.buzzer-question { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; margin-bottom: 24px; line-height: 1.4; }
+.buzzer-hint { font-size: 12px; color: var(--muted); margin-top: 16px; }
+
+/* Partner mode */
+.partner-screen-inner { text-align: center; }
+.player-indicator {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: 99px; padding: 8px 20px; margin-bottom: 24px;
+  font-size: 14px; font-weight: 500;
+}
+.player-dot { width: 10px; height: 10px; border-radius: 50%; }
+.player-dot.p1 { background: var(--gold); }
+.player-dot.p2 { background: var(--blue); }
+.partner-scores {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px;
+}
+.partner-score-card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px; text-align: center;
+}
+.partner-score-card.active { border-color: var(--gold); }
+.partner-score-card.active.p2active { border-color: var(--blue); }
+.p-name { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.p-score { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; }
+.p1-score { color: var(--gold); }
+.p2-score { color: var(--blue); }
+
+/* ── RESULTS ── */
+.results-hero { text-align: center; padding: 20px 0 32px; }
+.results-score-ring {
+  width: 140px; height: 140px; margin: 0 auto 20px;
+  position: relative;
+}
+.results-score-ring svg { transform: rotate(-90deg); }
+.results-score-ring circle { fill: none; stroke: var(--border); stroke-width: 6; }
+.results-score-ring .score-arc { stroke: var(--gold); stroke-width: 6; stroke-linecap: round; }
+.results-pct {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.results-pct-num { font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 800; color: var(--gold); }
+.results-pct-label { font-size: 11px; color: var(--muted); }
+.results-title { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 800; margin-bottom: 8px; }
+.results-sub { color: var(--muted); font-size: 14px; }
+
+.cat-results { margin: 28px 0; }
+.cat-result-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.cat-result-label { font-size: 13px; min-width: 130px; }
+.cat-result-bar { flex: 1; height: 8px; background: var(--border); border-radius: 99px; overflow: hidden; }
+.cat-result-fill { height: 100%; border-radius: 99px; transition: width 0.6s ease; }
+.cat-result-pct { font-size: 12px; font-family: 'Syne', sans-serif; font-weight: 700; min-width: 36px; text-align: right; }
+.weak-label { font-size: 10px; color: var(--red); margin-left: 4px; }
+
+.results-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.results-btn {
+  padding: 16px; border-radius: var(--radius); cursor: pointer;
+  font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700;
+  transition: all 0.15s; border: 1px solid var(--border);
+  background: var(--bg2); color: var(--text);
+}
+.results-btn:hover { border-color: var(--border2); }
+.results-btn.primary { background: var(--gold); color: #060f08; border-color: var(--gold); }
+.results-btn.primary:hover { background: var(--gold2); border-color: var(--gold2); }
+
+/* ── LOADING ── */
+.loading-overlay {
+  position: fixed; inset: 0; background: rgba(6,15,8,0.93);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 100; display: none;
+}
+.loading-overlay.show { display: flex; }
+.loading-spinner {
+  width: 48px; height: 48px; border: 3px solid var(--border);
+  border-top-color: var(--gold); border-radius: 50%;
+  animation: spin 0.8s linear infinite; margin-bottom: 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-family: 'Syne', sans-serif; font-size: 16px; color: var(--muted); }
+
+/* back btn */
+.back-btn {
+  background: none; border: none; color: var(--muted);
+  font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; gap: 6px; padding: 0; margin-bottom: 24px;
+  transition: color 0.15s;
+}
+.back-btn:hover { color: var(--text); }
+
+/* joker */
+.joker-btn {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 99px; padding: 6px 14px; font-size: 12px;
+  cursor: pointer; color: var(--muted); transition: all 0.15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.joker-btn:hover:not(:disabled) { border-color: var(--gold); color: var(--gold); }
+.joker-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+@media (max-width: 580px) {
+  .modes-grid { grid-template-columns: 1fr; }
+  .cats-grid { grid-template-columns: repeat(2,1fr); }
+  .options-grid { grid-template-columns: 1fr; }
+  .results-actions { grid-template-columns: 1fr; }
+  .stats-row { grid-template-columns: 1fr 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loading">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">Fragen werden generiert…</div>
+</div>
+
+<div class="app">
+
+  <!-- HEADER (always visible) -->
+  <header class="site-header">
+    <div class="logo">
+      <div class="logo-icon" style="background:#1db954;color:#060f08;">⚽</div>
+      <div class="logo-text">Quiz<span>Champion</span></div>
+    </div>
+    <div class="header-badge">🟢⚪ WERDER BREMEN TRAINER</div>
+  </header>
+
+  <!-- ═══ HOME SCREEN ═══ -->
+  <div class="screen active" id="screen-home">
+    <div class="hero">
+      <div class="hero-title">Trainiere wie ein<br><span class="accent">Champion.</span></div>
+      <div class="hero-sub">Bereite dich auf die Deutschen Quizmeisterschaften vor – mit KI-generierten Fragen auf echtem Wettkampfniveau.</div>
+    </div>
+
+    <div class="stats-row" id="statsRow">
+      <div class="stat-card">
+        <div class="stat-num" id="statTotal">0</div>
+        <div class="stat-label">Fragen beantwortet</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statCorrect">–</div>
+        <div class="stat-label">Richtigquote</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" id="statSessions">0</div>
+        <div class="stat-label">Trainingsrunden</div>
+      </div>
+    </div>
+
+    <!-- LIVE RANKING CARD -->
+    <div id="homeRankCard" style="display:none;margin-bottom:32px;">
+      <div class="section-title">Dein aktuelles Ranking</div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+          <!-- Current place -->
+          <div style="display:flex;align-items:center;gap:20px;">
+            <div style="text-align:center;">
+              <div id="homeRankPlace" style="font-family:'Syne',sans-serif;font-size:52px;font-weight:800;line-height:1;color:var(--gold);">–</div>
+              <div id="homeRankOf" style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;margin-top:2px;">Platz</div>
+            </div>
+            <!-- Delta arrow -->
+            <div id="homeRankDelta" style="display:none;flex-direction:column;align-items:center;gap:2px;">
+              <div id="homeRankArrow" style="font-size:28px;line-height:1;"></div>
+              <div id="homeRankDeltaNum" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;"></div>
+              <div style="font-size:10px;color:var(--muted);">letztes Spiel</div>
+            </div>
+          </div>
+          <!-- Mini history sparkline -->
+          <div style="flex:1;min-width:140px;">
+            <div id="homeRankVerdict" style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:6px;"></div>
+            <div id="homeRankSub" style="font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:12px;"></div>
+            <canvas id="homeRankSparkline" height="36" style="width:100%;display:block;"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="homeRankLoading" style="display:none;margin-bottom:32px;">
+      <div class="section-title">Dein aktuelles Ranking</div>
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:20px 24px;display:flex;align-items:center;gap:14px;">
+        <div style="width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0;"></div>
+        <div style="font-size:13px;color:var(--muted);">Ranking wird aktualisiert…</div>
+      </div>
+    </div>
+
+    <div class="section-title">Spielmodus wählen</div>
+    <div class="modes-grid" id="modesGrid">
+      <div class="mode-card selected" data-mode="mc" onclick="selectMode(this)">
+        <div class="mode-icon">🎯</div>
+        <div class="mode-name">Multiple Choice</div>
+        <div class="mode-desc">4 Antwortmöglichkeiten, klassisch wie beim Wettkampf</div>
+      </div>
+      <div class="mode-card" data-mode="buzzer" onclick="selectMode(this)">
+        <div class="mode-icon">⚡</div>
+        <div class="mode-name">Zeitdruck-Buzzer</div>
+        <div class="mode-desc">10 Sekunden – dann ist Zeit! Schnell denken!</div>
+      </div>
+      <div class="mode-card" data-mode="text" onclick="selectMode(this)">
+        <div class="mode-icon">✍️</div>
+        <div class="mode-name">Freiantwort</div>
+        <div class="mode-desc">Antwort eintippen – ohne Hinweise, volle Herausforderung</div>
+      </div>
+      <div class="mode-card" data-mode="partner" onclick="selectMode(this)">
+        <div class="mode-icon">👥</div>
+        <div class="mode-name">Partnerquiz</div>
+        <div class="mode-desc">Zwei spielen gegeneinander, Fragen abwechselnd</div>
+      </div>
+    </div>
+
+    <div class="section-title">Kategorien (klicke zum Auswählen)</div>
+    <div class="cats-grid" id="catsGrid">
+      <div class="cat-btn selected" data-cat="Allgemeinwissen" onclick="toggleCat(this)" style="position:relative">
+        <span class="cat-emoji">🌍</span>Allgemeinwissen
+      </div>
+      <div class="cat-btn selected" data-cat="Geschichte" onclick="toggleCat(this)" style="position:relative">
+        <span class="cat-emoji">📜</span>Geschichte
+      </div>
+      <div class="cat-btn selected" data-cat="Geographie" onclick="toggleCat(this)" style="position:relative">
+        <span class="cat-emoji">🗺️</span>Geographie
+      </div>
+      <div class="cat-btn selected" data-cat="Sport" onclick="toggleCat(this)" style="position:relative">
+        <span class="cat-emoji">⚽</span>Sport
+      </div>
+      <div class="cat-btn selected" data-cat="Wissenschaft & Natur" onclick="toggleCat(this)" style="position:relative">
+        <span class="cat-emoji">🔬</span>Wissenschaft
+      </div>
+      <div class="cat-btn selected" data-cat="Kultur & Kunst" onclick="toggleCat(this)" style="position:relative">
+        <span class="cat-emoji">🎨</span>Kultur & Kunst
+      </div>
+      <div class="cat-btn selected" data-cat="Politik" onclick="toggleCat(this)" style="position:relative">
+        <span class="cat-emoji">🏛️</span>Politik
+      </div>
+      <div class="cat-btn selected" data-cat="Musik & Film" onclick="toggleCat(this)" style="position:relative">
+        <span class="cat-emoji">🎬</span>Musik & Film
+      </div>
+    </div>
+
+    <button class="start-btn" id="startBtn" onclick="startQuiz()">Training starten →</button>
+  </div>
+
+  <!-- ═══ QUIZ SCREEN (MC + TEXT) ═══ -->
+  <div class="screen" id="screen-quiz">
+    <button class="back-btn" onclick="goHome()">← Zurück zur Auswahl</button>
+    <div class="quiz-top">
+      <div class="quiz-meta">
+        <span class="quiz-cat-badge" id="qCatBadge">Kategorie</span>
+        <span class="quiz-progress-text" id="qProgress">1 / 10</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="joker-btn" id="jokerBtn" onclick="useJoker()">🃏 50:50 Joker</button>
+        <div class="timer-ring" id="timerRing" style="display:none">
+          <svg width="56" height="56" viewBox="0 0 56 56">
+            <circle cx="28" cy="28" r="24" />
+            <circle class="progress" id="timerArc" cx="28" cy="28" r="24" stroke-dasharray="150.8" stroke-dashoffset="0"/>
+          </svg>
+          <div class="timer-num" id="timerNum">10</div>
+        </div>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+    <div class="question-box">
+      <div class="question-num" id="qNum">FRAGE 1</div>
+      <div class="question-text" id="qText">Lade Frage…</div>
+    </div>
+
+    <div class="options-grid" id="optionsGrid"></div>
+    <div class="text-input-wrap" id="textInputWrap" style="display:none">
+      <input type="text" id="textInput" placeholder="Deine Antwort eingeben…" onkeydown="if(event.key==='Enter')submitText()">
+    </div>
+    <button class="submit-btn" id="submitBtn" style="display:none" onclick="submitText()">Antwort bestätigen</button>
+
+    <div class="feedback-box" id="feedbackBox">
+      <div class="feedback-title" id="feedbackTitle"></div>
+      <div class="feedback-explanation" id="feedbackExp"></div>
+    </div>
+
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Nächste Frage →</button>
+  </div>
+
+  <!-- ═══ BUZZER SCREEN ═══ -->
+  <div class="screen" id="screen-buzzer">
+    <button class="back-btn" onclick="goHome()">← Zurück zur Auswahl</button>
+    <div class="quiz-top">
+      <div class="quiz-meta">
+        <span class="quiz-cat-badge" id="bCatBadge">Kategorie</span>
+        <span class="quiz-progress-text" id="bProgress">1 / 10</span>
+      </div>
+      <div class="timer-ring">
+        <svg width="56" height="56" viewBox="0 0 56 56">
+          <circle cx="28" cy="28" r="24" />
+          <circle class="progress" id="bTimerArc" cx="28" cy="28" r="24" stroke-dasharray="150.8" stroke-dashoffset="0"/>
+        </svg>
+        <div class="timer-num" id="bTimerNum">10</div>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="bProgressFill"></div></div>
+
+    <div class="question-box" style="margin-bottom:24px;">
+      <div class="question-num" id="bQNum">FRAGE 1</div>
+      <div class="buzzer-question" id="bQText">Lade Frage…</div>
+    </div>
+
+    <div class="buzzer-wrap">
+      <button class="buzzer-btn" id="buzzerBtn" onclick="buzz()">BUZZ!</button>
+      <div class="buzzer-hint" id="buzzerHint">Drücke den Buzzer wenn du die Antwort weißt</div>
+    </div>
+
+    <div class="text-input-wrap" id="bTextWrap" style="display:none">
+      <input type="text" id="bTextInput" placeholder="Antwort schnell eingeben…" onkeydown="if(event.key==='Enter')submitBuzzer()">
+    </div>
+    <button class="submit-btn" id="bSubmitBtn" style="display:none" onclick="submitBuzzer()">Bestätigen</button>
+    <div class="feedback-box" id="bFeedbackBox">
+      <div class="feedback-title" id="bFeedbackTitle"></div>
+      <div class="feedback-explanation" id="bFeedbackExp"></div>
+    </div>
+    <button class="next-btn" id="bNextBtn" onclick="nextBuzzer()">Nächste Frage →</button>
+  </div>
+
+  <!-- ═══ PARTNER SCREEN ═══ -->
+  <div class="screen" id="screen-partner">
+    <button class="back-btn" onclick="goHome()">← Zurück zur Auswahl</button>
+    <div class="partner-scores">
+      <div class="partner-score-card" id="p1Card">
+        <div class="p-name">🟡 Spieler 1</div>
+        <div class="p-score p1-score" id="p1Score">0</div>
+      </div>
+      <div class="partner-score-card" id="p2Card">
+        <div class="p-name">🔵 Spieler 2</div>
+        <div class="p-score p2-score" id="p2Score">0</div>
+      </div>
+    </div>
+
+    <div style="text-align:center;margin-bottom:20px;">
+      <div class="player-indicator" id="playerIndicator">
+        <span class="player-dot p1" id="playerDot"></span>
+        <span id="playerName">Spieler 1 ist dran</span>
+      </div>
+    </div>
+
+    <div class="quiz-top">
+      <div class="quiz-meta">
+        <span class="quiz-cat-badge" id="pCatBadge">Kategorie</span>
+        <span class="quiz-progress-text" id="pProgress">1 / 10</span>
+      </div>
+      <button class="joker-btn" id="pJokerBtn" onclick="usePartnerJoker()">🃏 50:50</button>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="pProgressFill"></div></div>
+
+    <div class="question-box">
+      <div class="question-num" id="pQNum">FRAGE 1</div>
+      <div class="question-text" id="pQText">Lade Frage…</div>
+    </div>
+
+    <div class="options-grid" id="pOptionsGrid"></div>
+    <div class="feedback-box" id="pFeedbackBox">
+      <div class="feedback-title" id="pFeedbackTitle"></div>
+      <div class="feedback-explanation" id="pFeedbackExp"></div>
+    </div>
+    <button class="next-btn" id="pNextBtn" onclick="nextPartner()">Nächste Frage →</button>
+  </div>
+
+  <!-- ═══ RESULTS SCREEN ═══ -->
+  <div class="screen" id="screen-results">
+    <div class="results-hero">
+      <div class="results-score-ring">
+        <svg width="140" height="140" viewBox="0 0 140 140">
+          <circle cx="70" cy="70" r="60"/>
+          <circle class="score-arc" id="scoreArc" cx="70" cy="70" r="60" stroke-dasharray="376.99" stroke-dashoffset="376.99"/>
+        </svg>
+        <div class="results-pct">
+          <div class="results-pct-num" id="resPct">0%</div>
+          <div class="results-pct-label">Richtig</div>
+        </div>
+      </div>
+      <div class="results-title" id="resTitle">Gut gemacht!</div>
+      <div class="results-sub" id="resSub"></div>
+    </div>
+
+    <div class="section-title">Ergebnis nach Kategorie</div>
+    <div class="cat-results" id="catResults"></div>
+
+    <div id="partnerResults" style="display:none;margin-bottom:24px;text-align:center;">
+      <div class="section-title">Partnerduell Ergebnis</div>
+      <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:800;" id="partnerWinner"></div>
+    </div>
+
+    <!-- RANKING BOX -->
+    <div id="rankingBox" style="margin-bottom:28px;">
+      <div class="section-title">Deine Platzierung bei der Quizmeisterschaft</div>
+      <div id="rankingInner" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;display:flex;align-items:center;gap:20px;">
+        <div id="rankingSpinner" style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;">
+          <div style="width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+          <div style="font-size:13px;color:var(--muted);">KI analysiert deine Leistung…</div>
+        </div>
+        <div id="rankingContent" style="display:none;width:100%;">
+          <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+            <div style="text-align:center;min-width:80px;">
+              <div id="rankingPlace" style="font-family:'Syne',sans-serif;font-size:48px;font-weight:800;color:var(--gold);line-height:1;">–</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;letter-spacing:1px;text-transform:uppercase;">Platz</div>
+            </div>
+            <div style="flex:1;min-width:180px;">
+              <div id="rankingVerdict" style="font-family:'Syne',sans-serif;font-size:16px;font-weight:700;margin-bottom:8px;"></div>
+              <div id="rankingText" style="font-size:13px;color:var(--muted);line-height:1.6;"></div>
+            </div>
+          </div>
+          <div id="rankingTip" style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);font-size:13px;color:var(--muted);line-height:1.6;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="results-actions">
+      <button class="results-btn" onclick="trainWeakness()">🎯 Schwächen trainieren</button>
+      <button class="results-btn primary" onclick="goHome()">Neue Runde →</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API_KEY_PLACEHOLDER = '';
+
+// ── STATE ──
+let selectedMode = 'mc';
+let selectedCats = ['Allgemeinwissen','Geschichte','Geographie','Sport','Wissenschaft & Natur','Kultur & Kunst','Politik','Musik & Film'];
+let questions = [];
+let currentQ = 0;
+let score = 0;
+let jokerUsed = false;
+let timerInterval = null;
+let timerSeconds = 10;
+let currentPlayer = 1;
+let p1score = 0, p2score = 0;
+let pJokerUsed = false;
+let sessionResults = {};
+let globalStats = JSON.parse(localStorage.getItem('qcStats') || '{"total":0,"correct":0,"sessions":0,"cats":{}}');
+let rankingHistory = JSON.parse(localStorage.getItem('qcRankHistory') || '[]');
+
+// ── UI HELPERS ──
+const $ = id => document.getElementById(id);
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  $(id).classList.add('active');
+}
+function showLoading(text='Fragen werden generiert…') {
+  $('loadingText').textContent = text;
+  $('loading').classList.add('show');
+}
+function hideLoading() { $('loading').classList.remove('show'); }
+
+// ── HOME ──
+function selectMode(el) {
+  document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedMode = el.dataset.mode;
+}
+function toggleCat(el) {
+  el.classList.toggle('selected');
+  const cat = el.dataset.cat;
+  if (el.classList.contains('selected')) { if (!selectedCats.includes(cat)) selectedCats.push(cat); }
+  else selectedCats = selectedCats.filter(c => c !== cat);
+  $('startBtn').disabled = selectedCats.length === 0;
+}
+
+function updateHomeStats() {
+  $('statTotal').textContent = globalStats.total;
+  $('statCorrect').textContent = globalStats.total > 0 ? Math.round(globalStats.correct/globalStats.total*100)+'%' : '–';
+  $('statSessions').textContent = globalStats.sessions;
+  // weakness indicators
+  document.querySelectorAll('.cat-btn').forEach(btn => {
+    const cat = btn.dataset.cat;
+    const old = btn.querySelector('.weakness-dot');
+    if (old) old.remove();
+    if (globalStats.cats[cat] && globalStats.cats[cat].total >= 5) {
+      const rate = globalStats.cats[cat].correct / globalStats.cats[cat].total;
+      if (rate < 0.5) {
+        const dot = document.createElement('div');
+        dot.className = 'weakness-dot';
+        btn.appendChild(dot);
+      }
+    }
+  });
+}
+updateHomeStats();
+renderHomeRanking();
+
+// ── GENERATE QUESTIONS VIA API ──
+let loadingMoreQuestions = false;
+
+async function generateQuestions(cats, count=10, mode='') {
+  const catList = cats.join(', ');
+  const modeHint = mode === 'text' ? 'Die Fragen sollen eher schwerer sein, da keine Antwortmöglichkeiten gegeben werden.' : '';
+  const prompt = `Du bist ein Experte für die Deutschen Quizmeisterschaften. Generiere ${count} Quiz-Fragen auf echtem Quizmeisterschafts-Niveau für die folgenden Kategorien: ${catList}.
+${modeHint}
+Antworte NUR mit einem JSON-Array, kein Text davor oder danach, keine Markdown-Backticks.
+Format:
+[
+  {
+    "frage": "Frage hier",
+    "kategorie": "Kategorie",
+    "optionen": ["A", "B", "C", "D"],
+    "korrekt": "A",
+    "erklaerung": "Kurze Erklärung warum A richtig ist"
+  }
+]
+Verteile die Fragen gleichmäßig über die Kategorien. Die Fragen sollen anspruchsvoll sein wie bei echten Quizmeisterschaften – präzise, faktisch korrekt, keine trivialen Fragen.`;
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 4000,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  const data = await resp.json();
+  const text = data.content[0].text.replace(/```json|```/g,'').trim();
+  return JSON.parse(text);
+}
+
+// Loads first 3 questions fast, then fetches remaining 7 in background
+async function generateQuestionsProgressive(cats, mode) {
+  // Fetch 3 quick-start questions first
+  const first = await generateQuestions(cats, 3, mode);
+  return first;
+}
+
+async function loadMoreQuestionsInBackground(cats, mode) {
+  if (loadingMoreQuestions) return;
+  loadingMoreQuestions = true;
+  try {
+    const more = await generateQuestions(cats, 7, mode);
+    questions = questions.concat(more);
+  } catch(e) { console.error('Background load failed', e); }
+  loadingMoreQuestions = false;
+}
+
+// ── START QUIZ ──
+async function startQuiz() {
+  if (selectedCats.length === 0) return;
+  showLoading('Erste Fragen werden geladen…');
+  try {
+    const first = await generateQuestionsProgressive(selectedCats, selectedMode);
+    questions = first;
+    currentQ = 0; score = 0; jokerUsed = false;
+    p1score = 0; p2score = 0; currentPlayer = 1; pJokerUsed = false;
+    sessionResults = {};
+    globalStats.sessions++;
+    saveStats();
+    hideLoading();
+
+    if (selectedMode === 'buzzer') { startBuzzerMode(); }
+    else if (selectedMode === 'partner') { startPartnerMode(); }
+    else { startMCMode(); }
+
+    // Load remaining 7 questions silently in background
+    loadMoreQuestionsInBackground(selectedCats, selectedMode);
+  } catch(e) {
+    hideLoading();
+    alert('Fehler beim Laden der Fragen. Bitte prüfe deine Verbindung.');
+    console.error(e);
+  }
+}
+
+// ── MC MODE ──
+function startMCMode() {
+  showScreen('screen-quiz');
+  $('timerRing').style.display = selectedMode === 'buzzer' ? 'flex' : 'none';
+  renderQuestion();
+}
+
+function renderQuestion() {
+  // If we've caught up to the end but background is still loading, wait
+  if (currentQ >= questions.length && loadingMoreQuestions) {
+    $('qText').textContent = '⏳ Nächste Fragen werden geladen…';
+    $('optionsGrid').innerHTML = '';
+    $('optionsGrid').style.display = 'grid';
+    $('textInputWrap').style.display = 'none';
+    $('submitBtn').style.display = 'none';
+    setTimeout(renderQuestion, 600);
+    return;
+  }
+  if (currentQ >= questions.length) { showResults(); return; }
+  const q = questions[currentQ];
+  jokerUsed = false;
+  $('jokerBtn').disabled = false;
+  $('jokerBtn').style.display = selectedMode === 'text' ? 'none' : 'inline-block';
+  $('qCatBadge').textContent = q.kategorie;
+  $('qProgress').textContent = `${currentQ+1} / ${questions.length}`;
+  $('qNum').textContent = `FRAGE ${currentQ+1}`;
+  $('qText').textContent = q.frage;
+  $('progressFill').style.width = `${(currentQ/questions.length)*100}%`;
+  $('feedbackBox').className = 'feedback-box';
+  $('nextBtn').className = 'next-btn';
+
+  if (selectedMode === 'text') {
+    $('optionsGrid').style.display = 'none';
+    $('textInputWrap').style.display = 'block';
+    $('submitBtn').style.display = 'block';
+    $('textInput').value = '';
+    $('textInput').className = '';
+    $('textInput').disabled = false;
+    $('textInput').focus();
+  } else {
+    $('optionsGrid').style.display = 'grid';
+    $('textInputWrap').style.display = 'none';
+    $('submitBtn').style.display = 'none';
+    renderOptions(q);
+  }
+}
+
+function renderOptions(q, eliminatedWrong=[]) {
+  const grid = $('optionsGrid');
+  grid.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  q.optionen.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.dataset.answer = opt;
+    const isElim = eliminatedWrong.includes(opt) && opt !== q.korrekt;
+    if (isElim) { btn.disabled = true; btn.style.opacity = '0.25'; }
+    btn.innerHTML = `<span class="option-letter">${letters[i]}</span>${opt}`;
+    btn.onclick = () => selectOption(btn, opt, q);
+    grid.appendChild(btn);
+  });
+}
+
+function selectOption(btn, chosen, q) {
+  document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+  const correct = chosen === q.korrekt;
+  btn.classList.add(correct ? 'correct' : 'wrong');
+  if (!correct) {
+    document.querySelectorAll('.option-btn').forEach(b => {
+      if (b.dataset.answer === q.korrekt) b.classList.add('correct');
+    });
+  }
+  recordAnswer(q.kategorie, correct);
+  showFeedback(correct, q);
+}
+
+function submitText() {
+  const q = questions[currentQ];
+  const answer = $('textInput').value.trim().toLowerCase();
+  const correct_lower = q.korrekt.toLowerCase();
+  const correct = answer === correct_lower ||
+    answer.includes(correct_lower) || correct_lower.includes(answer) && answer.length > 2;
+  $('textInput').disabled = true;
+  $('submitBtn').disabled = true;
+  $('textInput').className = correct ? 'correct' : 'wrong';
+  if (!correct) {
+    const hint = document.createElement('p');
+    hint.style.cssText = 'font-size:13px;color:var(--muted);margin-top:8px;';
+    hint.textContent = `Richtige Antwort: ${q.korrekt}`;
+    $('textInputWrap').appendChild(hint);
+  }
+  recordAnswer(q.kategorie, correct);
+  showFeedback(correct, q);
+}
+
+function showFeedback(correct, q) {
+  const fb = $('feedbackBox');
+  fb.className = 'feedback-box show ' + (correct ? 'feedback-correct' : 'feedback-wrong');
+  $('feedbackTitle').textContent = correct ? '✓ Richtig!' : '✗ Leider falsch';
+  $('feedbackExp').textContent = q.erklaerung;
+  $('nextBtn').className = 'next-btn show';
+}
+
+function useJoker() {
+  if (jokerUsed) return;
+  jokerUsed = true;
+  $('jokerBtn').disabled = true;
+  const q = questions[currentQ];
+  const wrong = q.optionen.filter(o => o !== q.korrekt);
+  const toElim = wrong.slice(0,2);
+  renderOptions(q, toElim);
+}
+
+function nextQuestion() {
+  if (selectedMode === 'text') {
+    const hint = $('textInputWrap').querySelector('p');
+    if (hint) hint.remove();
+    $('submitBtn').disabled = false;
+  }
+  currentQ++;
+  renderQuestion();
+}
+
+// ── BUZZER MODE ──
+function startBuzzerMode() {
+  showScreen('screen-buzzer');
+  renderBuzzer();
+}
+
+function renderBuzzer() {
+  if (currentQ >= questions.length && loadingMoreQuestions) {
+    $('bQText').textContent = '⏳ Nächste Fragen werden geladen…';
+    setTimeout(renderBuzzer, 600);
+    return;
+  }
+  if (currentQ >= questions.length) { showResults(); return; }
+  const q = questions[currentQ];
+  $('bCatBadge').textContent = q.kategorie;
+  $('bProgress').textContent = `${currentQ+1} / ${questions.length}`;
+  $('bQNum').textContent = `FRAGE ${currentQ+1}`;
+  $('bQText').textContent = q.frage;
+  $('bProgressFill').style.width = `${(currentQ/questions.length)*100}%`;
+  $('bFeedbackBox').className = 'feedback-box';
+  $('bNextBtn').className = 'next-btn';
+  $('bTextWrap').style.display = 'none';
+  $('bSubmitBtn').style.display = 'none';
+  $('buzzerBtn').disabled = false;
+  $('buzzerHint').textContent = 'Drücke den Buzzer wenn du die Antwort weißt';
+  clearInterval(timerInterval);
+  startTimer('bTimerArc','bTimerNum', 10, () => {
+    // time's up without buzz
+    $('buzzerBtn').disabled = true;
+    $('buzzerHint').textContent = '⏰ Zeit abgelaufen!';
+    recordAnswer(questions[currentQ].kategorie, false);
+    showBuzzerFeedback(false, questions[currentQ]);
+  });
+}
+
+function startTimer(arcId, numId, seconds, onEnd) {
+  let remaining = seconds;
+  const circ = 150.8;
+  timerSeconds = seconds;
+  clearInterval(timerInterval);
+  const arc = $(arcId), num = $(numId);
+  arc.style.strokeDashoffset = '0';
+  arc.style.stroke = 'var(--gold)';
+  num.textContent = seconds;
+  timerInterval = setInterval(() => {
+    remaining--;
+    num.textContent = remaining;
+    arc.style.strokeDashoffset = (circ * (1 - remaining/seconds)).toString();
+    if (remaining <= 3) arc.style.stroke = 'var(--red)';
+    if (remaining <= 0) { clearInterval(timerInterval); onEnd && onEnd(); }
+  }, 1000);
+}
+
+function buzz() {
+  clearInterval(timerInterval);
+  const btn = $('buzzerBtn');
+  btn.classList.add('buzzed');
+  btn.disabled = true;
+  setTimeout(() => btn.classList.remove('buzzed'), 400);
+  $('buzzerHint').textContent = 'Du hast gebuzzert! Gib die Antwort ein:';
+  $('bTextWrap').style.display = 'block';
+  $('bSubmitBtn').style.display = 'block';
+  $('bTextInput').value = '';
+  $('bTextInput').focus();
+  // 8s to answer
+  startTimer('bTimerArc','bTimerNum', 8, () => {
+    submitBuzzer(true);
+  });
+}
+
+function submitBuzzer(timeout=false) {
+  clearInterval(timerInterval);
+  const q = questions[currentQ];
+  const answer = timeout ? '' : $('bTextInput').value.trim().toLowerCase();
+  const correct_lower = q.korrekt.toLowerCase();
+  const correct = !timeout && (answer === correct_lower || answer.includes(correct_lower) || (correct_lower.includes(answer) && answer.length > 2));
+  $('bTextInput').disabled = true;
+  $('bSubmitBtn').disabled = true;
+  recordAnswer(q.kategorie, correct);
+  showBuzzerFeedback(correct, q);
+}
+
+function showBuzzerFeedback(correct, q) {
+  const fb = $('bFeedbackBox');
+  fb.className = 'feedback-box show ' + (correct ? 'feedback-correct' : 'feedback-wrong');
+  $('bFeedbackTitle').textContent = correct ? '✓ Richtig!' : `✗ Falsch – Antwort: ${q.korrekt}`;
+  $('bFeedbackExp').textContent = q.erklaerung;
+  $('bNextBtn').className = 'next-btn show';
+}
+
+function nextBuzzer() {
+  $('bTextInput').disabled = false;
+  $('bSubmitBtn').disabled = false;
+  currentQ++;
+  renderBuzzer();
+}
+
+// ── PARTNER MODE ──
+function startPartnerMode() {
+  showScreen('screen-partner');
+  renderPartner();
+}
+
+function renderPartner() {
+  if (currentQ >= questions.length && loadingMoreQuestions) {
+    $('pQText').textContent = '⏳ Nächste Fragen werden geladen…';
+    setTimeout(renderPartner, 600);
+    return;
+  }
+  if (currentQ >= questions.length) {
+    showResults(true);
+    return;
+  }
+  const q = questions[currentQ];
+  const isP1 = currentPlayer === 1;
+  $('p1Card').className = 'partner-score-card' + (isP1 ? ' active' : '');
+  $('p2Card').className = 'partner-score-card' + (!isP1 ? ' active p2active' : '');
+  $('playerDot').className = 'player-dot ' + (isP1 ? 'p1' : 'p2');
+  $('playerName').textContent = isP1 ? 'Spieler 1 ist dran' : 'Spieler 2 ist dran';
+  $('pCatBadge').textContent = q.kategorie;
+  $('pProgress').textContent = `${currentQ+1} / ${questions.length}`;
+  $('pQNum').textContent = `FRAGE ${currentQ+1}`;
+  $('pQText').textContent = q.frage;
+  $('pProgressFill').style.width = `${(currentQ/questions.length)*100}%`;
+  $('pFeedbackBox').className = 'feedback-box';
+  $('pNextBtn').className = 'next-btn';
+  pJokerUsed = false;
+  $('pJokerBtn').disabled = false;
+  renderPartnerOptions(q);
+}
+
+function renderPartnerOptions(q, elim=[]) {
+  const grid = $('pOptionsGrid');
+  grid.innerHTML = '';
+  const letters = ['A','B','C','D'];
+  q.optionen.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.dataset.answer = opt;
+    const isElim = elim.includes(opt) && opt !== q.korrekt;
+    if (isElim) { btn.disabled = true; btn.style.opacity = '0.25'; }
+    btn.innerHTML = `<span class="option-letter">${letters[i]}</span>${opt}`;
+    btn.onclick = () => selectPartnerOption(btn, opt, q);
+    grid.appendChild(btn);
+  });
+}
+
+function selectPartnerOption(btn, chosen, q) {
+  document.querySelectorAll('#pOptionsGrid .option-btn').forEach(b => b.disabled = true);
+  const correct = chosen === q.korrekt;
+  btn.classList.add(correct ? 'correct' : 'wrong');
+  if (!correct) {
+    document.querySelectorAll('#pOptionsGrid .option-btn').forEach(b => {
+      if (b.dataset.answer === q.korrekt) b.classList.add('correct');
+    });
+  }
+  if (correct) { if (currentPlayer===1) p1score++; else p2score++; }
+  $('p1Score').textContent = p1score;
+  $('p2Score').textContent = p2score;
+  recordAnswer(q.kategorie, correct);
+  const fb = $('pFeedbackBox');
+  fb.className = 'feedback-box show ' + (correct ? 'feedback-correct' : 'feedback-wrong');
+  $('pFeedbackTitle').textContent = correct ? '✓ Richtig!' : `✗ Falsch – Antwort: ${q.korrekt}`;
+  $('pFeedbackExp').textContent = q.erklaerung;
+  $('pNextBtn').className = 'next-btn show';
+}
+
+function usePartnerJoker() {
+  if (pJokerUsed) return;
+  pJokerUsed = true;
+  $('pJokerBtn').disabled = true;
+  const q = questions[currentQ];
+  const wrong = q.optionen.filter(o => o !== q.korrekt);
+  renderPartnerOptions(q, wrong.slice(0,2));
+}
+
+function nextPartner() {
+  currentPlayer = currentPlayer === 1 ? 2 : 1;
+  currentQ++;
+  renderPartner();
+}
+
+// ── RECORD & STATS ──
+function recordAnswer(cat, correct) {
+  if (correct) score++;
+  if (!sessionResults[cat]) sessionResults[cat] = { total:0, correct:0 };
+  sessionResults[cat].total++;
+  if (correct) sessionResults[cat].correct++;
+  globalStats.total++;
+  if (correct) globalStats.correct++;
+  if (!globalStats.cats[cat]) globalStats.cats[cat] = { total:0, correct:0 };
+  globalStats.cats[cat].total++;
+  if (correct) globalStats.cats[cat].correct++;
+  saveStats();
+}
+
+function saveStats() { localStorage.setItem('qcStats', JSON.stringify(globalStats)); }
+
+function saveRankingEntry(platz, von, verdikt) {
+  rankingHistory.push({ platz, von, verdikt, ts: Date.now() });
+  if (rankingHistory.length > 20) rankingHistory = rankingHistory.slice(-20);
+  localStorage.setItem('qcRankHistory', JSON.stringify(rankingHistory));
+}
+
+function renderHomeRanking() {
+  if (rankingHistory.length === 0) {
+    $('homeRankLoading').style.display = 'none';
+    $('homeRankCard').style.display = 'block';
+    $('homeRankPlace').textContent = '#300';
+    $('homeRankPlace').style.color = 'var(--muted)';
+    $('homeRankOf').textContent = 'von ca. 300 Teilnehmern';
+    $('homeRankVerdict').textContent = 'Noch kein Spiel absolviert';
+    $('homeRankSub').textContent = 'Starte dein erstes Training um deine echte Platzierung zu ermitteln!';
+    $('homeRankDelta').style.display = 'none';
+    // draw empty sparkline placeholder
+    const canvas = $('homeRankSparkline');
+    if (canvas) {
+      canvas.width = canvas.offsetWidth || 220;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(4, canvas.height - 4);
+      ctx.lineTo(canvas.width - 4, canvas.height - 4);
+      ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+    }
+    return;
+  }
+  $('homeRankLoading').style.display = 'none';
+  $('homeRankCard').style.display = 'block';
+
+  const latest = rankingHistory[rankingHistory.length - 1];
+  const prev = rankingHistory.length >= 2 ? rankingHistory[rankingHistory.length - 2] : null;
+
+  $('homeRankPlace').textContent = `#${latest.platz}`;
+  $('homeRankPlace').style.color = 'var(--text)';
+  $('homeRankOf').textContent = `von ca. ${latest.von} Teilnehmern`;
+  $('homeRankVerdict').textContent = latest.verdikt;
+
+  if (prev) {
+    // positive delta = improved (rank number went down)
+    const prevNorm = prev.platz / prev.von * latest.von;
+    const delta = Math.round(prevNorm - latest.platz);
+    const deltaEl = $('homeRankDelta');
+    const arrowEl = $('homeRankArrow');
+    const numEl = $('homeRankDeltaNum');
+    deltaEl.style.display = 'flex';
+    if (delta > 0) {
+      arrowEl.textContent = '↑';
+      arrowEl.style.color = 'var(--green)';
+      numEl.textContent = `+${delta} Plätze`;
+      numEl.style.color = 'var(--green)';
+      $('homeRankSub').textContent = `Gegenüber dem letzten Spiel hast du dich um ${delta} Plätze verbessert. Weiter so!`;
+    } else if (delta < 0) {
+      arrowEl.textContent = '↓';
+      arrowEl.style.color = 'var(--red)';
+      numEl.textContent = `${delta} Plätze`;
+      numEl.style.color = 'var(--red)';
+      $('homeRankSub').textContent = `Gegenüber dem letzten Spiel bist du um ${Math.abs(delta)} Plätze zurückgefallen. Trainiere weiter!`;
+    } else {
+      arrowEl.textContent = '→';
+      arrowEl.style.color = 'var(--muted)';
+      numEl.textContent = 'Gleich';
+      numEl.style.color = 'var(--muted)';
+      $('homeRankSub').textContent = 'Deine Platzierung ist stabil geblieben.';
+    }
+  } else {
+    $('homeRankDelta').style.display = 'none';
+    $('homeRankSub').textContent = 'Spiele weitere Runden um deinen Fortschritt zu verfolgen.';
+  }
+
+  // Sparkline
+  drawSparkline();
+}
+
+function drawSparkline() {
+  const canvas = $('homeRankSparkline');
+  if (!canvas) return;
+  canvas.width = canvas.offsetWidth || 220;
+  const ctx = canvas.getContext('2d');
+  const h = canvas.height;
+  const w = canvas.width;
+  ctx.clearRect(0, 0, w, h);
+  if (rankingHistory.length < 2) return;
+
+  // invert: lower rank = higher on chart
+  const pcts = rankingHistory.map(r => 1 - (r.platz / r.von));
+  const minP = Math.min(...pcts), maxP = Math.max(...pcts);
+  const range = maxP - minP || 0.1;
+  const pts = pcts.map((p, i) => ({
+    x: (i / (pcts.length - 1)) * (w - 8) + 4,
+    y: h - 4 - ((p - minP) / range) * (h - 12)
+  }));
+
+  // gradient fill
+  const grad = ctx.createLinearGradient(0, 0, 0, h);
+  grad.addColorStop(0, 'rgba(29,185,84,0.25)');
+  grad.addColorStop(1, 'rgba(29,185,84,0)');
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, h);
+  pts.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.lineTo(pts[pts.length-1].x, h);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // line
+  ctx.beginPath();
+  pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+  ctx.strokeStyle = '#1db954';
+  ctx.lineWidth = 2;
+  ctx.lineJoin = 'round';
+  ctx.stroke();
+
+  // dots
+  pts.forEach((p, i) => {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, i === pts.length - 1 ? 4 : 2.5, 0, Math.PI * 2);
+    ctx.fillStyle = i === pts.length - 1 ? '#1db954' : 'rgba(29,185,84,0.6)';
+    ctx.fill();
+  });
+}
+
+// ── RESULTS ──
+function showResults(partnerMode=false) {
+  showScreen('screen-results');
+  const total = questions.length;
+  const pct = Math.round(score/total*100);
+  // animate ring
+  setTimeout(() => {
+    const arc = $('scoreArc');
+    const offset = 376.99 * (1 - pct/100);
+    arc.style.transition = 'stroke-dashoffset 1s ease';
+    arc.style.strokeDashoffset = offset;
+  }, 100);
+  $('resPct').textContent = pct+'%';
+
+  let title, sub;
+  if (pct >= 90) { title = '🏆 Meisterklasse!'; sub = 'Exzellentes Ergebnis – Quizmeisterschaftsniveau erreicht!'; }
+  else if (pct >= 75) { title = '⭐ Sehr gut!'; sub = 'Du bist auf einem starken Weg zur Meisterschaft.'; }
+  else if (pct >= 60) { title = '👍 Solide Leistung'; sub = 'Weiter so – mit gezieltem Training kannst du noch besser werden.'; }
+  else if (pct >= 40) { title = '📚 Noch Luft nach oben'; sub = 'Trainiere die schwachen Kategorien gezielt – du schaffst es!'; }
+  else { title = '💪 Kopf hoch!'; sub = 'Jede Übung zählt. Übe die Schwächen gezielt und du wirst besser.'; }
+  $('resTitle').textContent = title;
+  $('resSub').textContent = `${score} von ${total} Fragen richtig – ${sub}`;
+
+  // category breakdown
+  const container = $('catResults');
+  container.innerHTML = '';
+  const catEmojis = {'Allgemeinwissen':'🌍','Geschichte':'📜','Geographie':'🗺️','Sport':'⚽','Wissenschaft & Natur':'🔬','Kultur & Kunst':'🎨','Politik':'🏛️','Musik & Film':'🎬'};
+  Object.entries(sessionResults).forEach(([cat, data]) => {
+    const p = Math.round(data.correct/data.total*100);
+    const color = p>=70 ? 'var(--green)' : p>=40 ? 'var(--gold)' : 'var(--red)';
+    const row = document.createElement('div');
+    row.className = 'cat-result-row';
+    row.innerHTML = `
+      <div class="cat-result-label">${catEmojis[cat]||''} ${cat}${p<50?'<span class="weak-label">SCHWACH</span>':''}</div>
+      <div class="cat-result-bar"><div class="cat-result-fill" style="width:0%;background:${color}" data-target="${p}"></div></div>
+      <div class="cat-result-pct" style="color:${color}">${p}%</div>`;
+    container.appendChild(row);
+  });
+  setTimeout(() => {
+    container.querySelectorAll('.cat-result-fill').forEach(el => {
+      el.style.transition = 'width 0.8s ease';
+      el.style.width = el.dataset.target+'%';
+    });
+  }, 200);
+
+  if (partnerMode) {
+    $('partnerResults').style.display = 'block';
+    const winner = p1score > p2score ? '🟡 Spieler 1 gewinnt!' : p2score > p1score ? '🔵 Spieler 2 gewinnt!' : '🤝 Unentschieden!';
+    $('partnerWinner').textContent = `${winner} (${p1score}:${p2score})`;
+  } else {
+    $('partnerResults').style.display = 'none';
+  }
+
+  updateHomeStats();
+  fetchRanking(pct, score, questions.length, partnerMode);
+}
+
+async function fetchRanking(pct, correct, total, partnerMode) {
+  $('rankingBox').style.display = partnerMode ? 'none' : 'block';
+  if (partnerMode) return;
+  $('rankingSpinner').style.display = 'flex';
+  $('rankingContent').style.display = 'none';
+
+  const catSummary = Object.entries(sessionResults)
+    .map(([cat, d]) => `${cat}: ${Math.round(d.correct/d.total*100)}%`)
+    .join(', ');
+  const modeLabels = { mc: 'Multiple Choice', text: 'Freiantwort (schwer)', buzzer: 'Zeitdruck-Buzzer' };
+  const modeLabel = modeLabels[selectedMode] || selectedMode;
+
+  const prompt = `Du bist ein Experte für die Deutschen Quizmeisterschaften (DQM).
+Ein Teilnehmer hat ein Training absolviert:
+- Spielmodus: ${modeLabel}
+- Ergebnis: ${correct} von ${total} Fragen richtig (${pct}%)
+- Ergebnis nach Kategorie: ${catSummary}
+
+Schätze realistisch, auf welchem Platz dieser Teilnehmer bei den Deutschen Quizmeisterschaften landen würde (ca. 200–500 Teilnehmer).
+Bedenke: Freiantwort-Modus ist schwerer als MC, Zeitdruck auch. Passe die Einschätzung entsprechend an.
+
+Antworte NUR mit JSON, kein Text davor/danach, keine Backticks:
+{
+  "platz": 47,
+  "von": 300,
+  "verdikt": "Oberes Mittelfeld",
+  "analyse": "Zwei bis drei Sätze: Was hat gut geklappt, was war schwach? Konkret auf die Kategorien eingehen.",
+  "tipp": "Ein konkreter, motivierender Trainingstipp speziell für die schwächsten Kategorien."
+}`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 500,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content[0].text.replace(/```json|```/g,'').trim();
+    const r = JSON.parse(text);
+
+    $('rankingPlace').textContent = `#${r.platz}`;
+    $('rankingVerdict').textContent = r.verdikt;
+    $('rankingText').textContent = `von ca. ${r.von} Teilnehmern — ${r.analyse}`;
+    $('rankingTip').innerHTML = `💡 <strong>Trainingstipp:</strong> ${r.tipp}`;
+
+    const relPos = r.platz / r.von;
+    const placeColor = relPos <= 0.1 ? 'var(--green)' : relPos <= 0.35 ? 'var(--gold)' : relPos <= 0.65 ? '#aaa' : 'var(--muted)';
+    $('rankingPlace').style.color = placeColor;
+
+    // save to history for home screen
+    saveRankingEntry(r.platz, r.von, r.verdikt);
+
+    $('rankingSpinner').style.display = 'none';
+    $('rankingContent').style.display = 'block';
+  } catch(e) {
+    $('rankingSpinner').innerHTML = '<div style="font-size:13px;color:var(--muted);">Platzierung konnte nicht geladen werden.</div>';
+    console.error(e);
+  }
+}
+
+async function trainWeakness() {
+  // find weakest cats from session
+  const weakCats = Object.entries(sessionResults)
+    .filter(([,d]) => d.correct/d.total < 0.5)
+    .map(([cat]) => cat);
+  if (weakCats.length === 0) {
+    alert('Keine schwachen Kategorien gefunden – alles im grünen Bereich!');
+    return;
+  }
+  selectedCats = weakCats;
+  selectedMode = 'mc';
+  // update UI
+  document.querySelectorAll('.cat-btn').forEach(btn => {
+    if (weakCats.includes(btn.dataset.cat)) btn.classList.add('selected');
+    else btn.classList.remove('selected');
+  });
+  await startQuiz();
+}
+
+function goHome() {
+  clearInterval(timerInterval);
+  showScreen('screen-home');
+  updateHomeStats();
+  renderHomeRanking();
+}
+</script>
+</body>
+</html>
